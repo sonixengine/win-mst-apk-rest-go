@@ -49,11 +49,19 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 			if siteConfig.ApkDownloadURL != "" {
 				apkURL = siteConfig.ApkDownloadURL
 			}
-		} else {
-			// Fallback: check if agent exists in PostgreSQL agent table
+		}
+
+		// If activeDomain is empty or not yet configured, dynamically auto-sync from tenant MySQL
+		if activeDomain == "" {
 			var agent models.Agent
 			if agErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&agent).Error; agErr == nil {
-				appName = agent.Name
+				if appName == "Win Gaming" && agent.Name != "" {
+					appName = agent.Name
+				}
+				// Fetch latest main domain from tenant settings (is_main_domain = 1)
+				if syncedDomain, syncErr := SyncAgentDomainFromTenant(agent.UUID, agent.AgentCode); syncErr == nil && syncedDomain != "" {
+					activeDomain = syncedDomain
+				}
 			}
 		}
 	}
