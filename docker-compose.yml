@@ -1,4 +1,21 @@
 services:
+  master-panel-redis:
+    image: redis:7-alpine
+    container_name: master-panel-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - master-panel-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   master-panel-backend:
     build:
       context: .
@@ -9,11 +26,21 @@ services:
       - "${APP_PORT:-8080}:8080"
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=master-panel-redis
+      - REDIS_PORT=6379
+    depends_on:
+      master-panel-redis:
+        condition: service_healthy
     volumes:
       # Persistent storage for local SQLite database
       - ./data:/app/data
     networks:
       - master-panel-network
+
+volumes:
+  redis_data:
+    name: master-panel-redis-data
 
 networks:
   master-panel-network:
