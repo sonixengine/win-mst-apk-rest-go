@@ -1,0 +1,37 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Binaries and build outputs
+/bin/
+master-panel-api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test and coverage artifacts
+*.test
+*.out
+coverage.txt
+
+# Log files
+*.log
+app.log
+logs/
+
+# IDE & OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# SQLite Local Database
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

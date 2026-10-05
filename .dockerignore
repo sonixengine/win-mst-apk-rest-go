@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+app.log
+logs/
+bin/
+master-panel-api
+.git
+.DS_Store

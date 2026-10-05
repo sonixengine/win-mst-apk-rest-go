@@ -1,0 +1,21 @@
+services:
+  master-panel-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: master-panel-backend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    env_file:
+      - .env
+    volumes:
+      # Persistent storage for local SQLite database
+      - ./data:/app/data
+    networks:
+      - master-panel-network
+
+networks:
+  master-panel-network:
+    name: master-panel-network
+    driver: bridge
