@@ -20,7 +20,7 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 	}
 
 	var siteConfig models.MasterSiteConfig
-	var appName string = "DNADEMO"
+	var appName string = "DNA Gaming"
 	var logoURL string = ""
 	var activeDomain string = ""
 	var backupDomains []string = []string{}
@@ -31,7 +31,7 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 	if database.AdminDB != nil {
 		err := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&siteConfig).Error
 		if err == nil {
-			if siteConfig.AppName != "" {
+			if siteConfig.AppName != "" && siteConfig.AppName != "DNADEMO" {
 				appName = siteConfig.AppName
 			}
 			logoURL = siteConfig.LogoURL
@@ -54,7 +54,7 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 		}
 
 		// If activeDomain, appName, or logoURL is empty/default, dynamically auto-sync from tenant MySQL
-		if activeDomain == "" || logoURL == "" || appName == "DNADEMO" || appName == "" {
+		if activeDomain == "" || logoURL == "" || appName == "DNA Gaming" || appName == "DNADEMO" || appName == "" {
 			var agent models.Agent
 			if agErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&agent).Error; agErr == nil {
 				// Fetch latest domain, web (appName), and icon (logoURL) from tenant settings
@@ -62,14 +62,14 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 					activeDomain = syncedDomain
 					// Re-read updated siteConfig from database
 					if refreshErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&siteConfig).Error; refreshErr == nil {
-						if siteConfig.AppName != "" {
+						if siteConfig.AppName != "" && siteConfig.AppName != "DNADEMO" {
 							appName = siteConfig.AppName
 						}
 						if siteConfig.LogoURL != "" {
 							logoURL = siteConfig.LogoURL
 						}
 					}
-				} else if (appName == "DNADEMO" || appName == "") && agent.Name != "" {
+				} else if (appName == "DNA Gaming" || appName == "DNADEMO" || appName == "") && agent.Name != "" {
 					appName = agent.Name
 				}
 			}

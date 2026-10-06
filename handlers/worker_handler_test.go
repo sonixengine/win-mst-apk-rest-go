@@ -44,7 +44,7 @@ func TestGetWorkerAgentConfig_DefaultFallback(t *testing.T) {
 	if data["agent_code"] != "testagent" {
 		t.Errorf("Expected agent_code 'testagent', got %v", data["agent_code"])
 	}
-	if data["app_name"] != "DNADEMO" {
-		t.Errorf("Expected fallback app_name 'DNADEMO', got %v", data["app_name"])
+	if data["app_name"] != "DNA Gaming" {
+		t.Errorf("Expected fallback app_name 'DNA Gaming', got %v", data["app_name"])
 	}
 }
