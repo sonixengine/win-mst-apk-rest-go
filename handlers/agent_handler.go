@@ -599,6 +599,8 @@ func SyncAgentDomainFromTenant(agentUUID string, agentCode string) (string, erro
 
 	var results []struct {
 		HostURL string `gorm:"column:host_url"`
+		Web     string `gorm:"column:web"`
+		Icon    string `gorm:"column:icon"`
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -606,7 +608,7 @@ func SyncAgentDomainFromTenant(agentUUID string, agentCode string) (string, erro
 
 	// Query settings WHERE is_main_domain = 1
 	err = tenantDB.WithContext(ctx).Table("settings").
-		Select("host_url").
+		Select("host_url, web, icon").
 		Where("is_main_domain = ?", 1).
 		Order("id DESC").
 		Find(&results).Error
@@ -642,12 +644,28 @@ func SyncAgentDomainFromTenant(agentUUID string, agentCode string) (string, erro
 	}
 	formattedDomain = strings.TrimSuffix(formattedDomain, "/")
 
+	// Extract web (appName) and icon (logoURL) from settings
+	tenantAppName := strings.TrimSpace(results[0].Web)
+	tenantIcon := strings.TrimSpace(results[0].Icon)
+	if tenantIcon != "" && !strings.HasPrefix(tenantIcon, "http://") && !strings.HasPrefix(tenantIcon, "https://") {
+		if !strings.HasPrefix(tenantIcon, "/") {
+			tenantIcon = "/" + tenantIcon
+		}
+		tenantIcon = formattedDomain + tenantIcon
+	}
+
 	// Save to master_site_configs.active_domain in PostgreSQL
 	var siteConfig models.MasterSiteConfig
 	dbErr := database.AdminDB.Where("LOWER(agent_code) = ?", strings.ToLower(agentCode)).First(&siteConfig).Error
 
 	siteConfig.AgentCode = strings.ToLower(agentCode)
 	siteConfig.ActiveDomain = formattedDomain
+	if tenantAppName != "" {
+		siteConfig.AppName = tenantAppName
+	}
+	if tenantIcon != "" {
+		siteConfig.LogoURL = tenantIcon
+	}
 	siteConfig.UpdatedAt = time.Now()
 
 	if dbErr != nil {

@@ -53,16 +53,24 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 			}
 		}
 
-		// If activeDomain is empty or not yet configured, dynamically auto-sync from tenant MySQL
-		if activeDomain == "" {
+		// If activeDomain, appName, or logoURL is empty/default, dynamically auto-sync from tenant MySQL
+		if activeDomain == "" || logoURL == "" || appName == "DNADEMO" || appName == "" {
 			var agent models.Agent
 			if agErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&agent).Error; agErr == nil {
-				if (appName == "DNADEMO" || appName == "Win Gaming" || appName == "") && agent.Name != "" {
-					appName = agent.Name
-				}
-				// Fetch latest main domain from tenant settings (is_main_domain = 1)
+				// Fetch latest domain, web (appName), and icon (logoURL) from tenant settings
 				if syncedDomain, syncErr := SyncAgentDomainFromTenant(agent.UUID, agent.AgentCode); syncErr == nil && syncedDomain != "" {
 					activeDomain = syncedDomain
+					// Re-read updated siteConfig from database
+					if refreshErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&siteConfig).Error; refreshErr == nil {
+						if siteConfig.AppName != "" {
+							appName = siteConfig.AppName
+						}
+						if siteConfig.LogoURL != "" {
+							logoURL = siteConfig.LogoURL
+						}
+					}
+				} else if (appName == "DNADEMO" || appName == "") && agent.Name != "" {
+					appName = agent.Name
 				}
 			}
 		}
