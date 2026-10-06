@@ -20,7 +20,7 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 	}
 
 	var siteConfig models.MasterSiteConfig
-	var appName string = "Win Gaming"
+	var appName string = "DNADEMO"
 	var logoURL string = ""
 	var activeDomain string = ""
 	var backupDomains []string = []string{}
@@ -31,7 +31,9 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 	if database.AdminDB != nil {
 		err := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&siteConfig).Error
 		if err == nil {
-			appName = siteConfig.AppName
+			if siteConfig.AppName != "" {
+				appName = siteConfig.AppName
+			}
 			logoURL = siteConfig.LogoURL
 			activeDomain = siteConfig.ActiveDomain
 			if siteConfig.BackupDomains != "" {
@@ -55,7 +57,7 @@ func GetWorkerAgentConfig(c *fiber.Ctx) error {
 		if activeDomain == "" {
 			var agent models.Agent
 			if agErr := database.AdminDB.Where("LOWER(agent_code) = ?", agentCode).First(&agent).Error; agErr == nil {
-				if appName == "Win Gaming" && agent.Name != "" {
+				if (appName == "DNADEMO" || appName == "Win Gaming" || appName == "") && agent.Name != "" {
 					appName = agent.Name
 				}
 				// Fetch latest main domain from tenant settings (is_main_domain = 1)
